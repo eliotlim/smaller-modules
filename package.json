@@ -1,0 +1,32 @@
+{
+  "name": "smaller-modules",
+  "version": "0.1.0",
+  "description": "Shrink node_modules for deployment",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eliotlim/smaller-modules.git"
+  },
+  "keywords": [
+    "node_modules",
+    "shrink",
+    "smaller",
+    "zip",
+    "nodejs",
+    "node",
+    "modules",
+    "trace",
+    "nft",
+    "lambda",
+    "deployment"
+  ],
+  "author": "Eliot Lim",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eliotlim/smaller-modules/issues"
+  },
+  "homepage": "https://github.com/eliotlim/smaller-modules#readme"
+}
