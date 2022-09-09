@@ -2,9 +2,17 @@
   "name": "smaller-modules",
   "version": "0.1.0",
   "description": "Shrink node_modules for deployment",
+  "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "npm run build",
+    "build": "tsc -p .",
+    "buildinstallrun": "npm run build && npm install && node dist/index.js"
+  },
+  "bin": {
+    "smaller-modules": "dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -28,5 +36,18 @@
   "bugs": {
     "url": "https://github.com/eliotlim/smaller-modules/issues"
   },
-  "homepage": "https://github.com/eliotlim/smaller-modules#readme"
+  "homepage": "https://github.com/eliotlim/smaller-modules#readme",
+  "dependencies": {
+    "@vercel/nft": "^0.22.1",
+    "commander": "^9.4.0",
+    "fs-extra": "^10.1.0",
+    "klaw-sync": "^6.0.0",
+    "random-words": "^1.2.0",
+    "typescript": "^4.8.2",
+    "zip-lib": "^0.7.3"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/klaw-sync": "^6.0.1"
+  }
 }
