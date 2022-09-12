@@ -63,7 +63,7 @@ if (!opts.copy && !opts.list && !opts.zip) {
 let listOfJSFiles: string[] = [];
 
 if (opts.directory && opts.directory.length > 0) {
-  listOfJSFiles = listOfJSFiles.concat(opts.dir.map((directory: string) => discoverAllJsFiles(directory)));
+  listOfJSFiles = listOfJSFiles.concat(opts.directory.flatMap((directory: string) => discoverAllJsFiles(directory)));
 }
 
 if (opts.file && opts.file.length > 0) {
