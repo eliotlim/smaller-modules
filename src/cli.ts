@@ -3,16 +3,11 @@
 import {Command} from "commander";
 import * as fsExtra from "fs-extra";
 import path from "path";
-import randomWords from "random-words";
-import zipLib from "zip-lib";
 import {
-  copyAllFiles,
   DEFAULT_OUTPUT_DIRECTORY,
   DEFAULT_OUTPUT_FILENAME,
   DEFAULT_OUTPUT_SUBDIRECTORY,
-  DEFAULT_TEMPORARY_DIRECTORY,
-  discoverAllJsFiles,
-  traceAllJsFiles
+  SmallerModules
 } from "./index.js";
 
 function collect(value: string, previous: string[]) {
@@ -43,35 +38,32 @@ if (!opts.copy && !opts.list && !opts.zip) {
   program.outputHelp();
 }
 
-let listOfJSFiles: string[] = [];
+const smaller = new SmallerModules();
 
 if (opts.directory && opts.directory.length > 0) {
-  listOfJSFiles = listOfJSFiles.concat(opts.directory.flatMap((directory: string) => discoverAllJsFiles(directory)));
+  smaller.directories(opts.directory);
 }
 
 if (opts.file && opts.file.length > 0) {
-  listOfJSFiles = listOfJSFiles.concat(opts.file);
+  smaller.files(opts.file);
 }
 
-const listOfDependencies = await traceAllJsFiles(listOfJSFiles);
+await smaller.trace();
 
 if (opts.list) {
   if (!opts.outputPath && !opts.outputSubdirectory) {
-    listOfDependencies.forEach(entry => console.log(entry));
+    smaller.list().forEach(entry => console.log(entry));
   } else if (opts.outputPath) {
-    fsExtra.writeFileSync(path.join(opts.outputPath), listOfDependencies.join("\n"));
+    fsExtra.writeFileSync(path.join(opts.outputPath), smaller.list().join("\n"));
   }
 }
 
 if (opts.copy) {
-  const targetDirectory = opts.outputSubdirectory ?? DEFAULT_OUTPUT_DIRECTORY;
-  await copyAllFiles(targetDirectory, listOfDependencies);
+  await smaller.copy(opts.outputSubdirectory ?? DEFAULT_OUTPUT_DIRECTORY);
+  smaller.cleanup();
 }
 
 if (opts.zip) {
-  const tmpDirectory = `${DEFAULT_TEMPORARY_DIRECTORY}/smaller-modules-${randomWords(2).join('-')}`;
-  const targetDirectory = `${tmpDirectory}/${opts.outputSubdirectory ?? DEFAULT_OUTPUT_SUBDIRECTORY}`;
-  await copyAllFiles(targetDirectory, listOfDependencies);
-  await zipLib.archiveFolder(tmpDirectory, opts.outputPath ?? DEFAULT_OUTPUT_FILENAME, {followSymlinks: true});
-  fsExtra.emptyDirSync(tmpDirectory);
+  await smaller.zip(opts.outputPath ?? DEFAULT_OUTPUT_FILENAME, {outputSubdirectory: opts.outputSubdirectory ?? DEFAULT_OUTPUT_SUBDIRECTORY});
+  smaller.cleanup();
 }
