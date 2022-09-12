@@ -12,7 +12,7 @@
     "buildinstallrun": "npm run build && npm install && node dist/index.js"
   },
   "bin": {
-    "smaller-modules": "dist/index.js"
+    "smaller-modules": "dist/cli.js"
   },
   "repository": {
     "type": "git",
