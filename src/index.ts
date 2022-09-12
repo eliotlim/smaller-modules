@@ -2,6 +2,7 @@ import klawSync from "klaw-sync";
 import * as fsExtra from "fs-extra";
 import * as path from "path";
 import * as fs from "fs";
+import {nodeFileTrace} from "@vercel/nft";
 
 export let DEFAULT_OUTPUT_DIRECTORY = './output';
 export let DEFAULT_TEMPORARY_DIRECTORY = '/tmp/';
@@ -15,7 +16,12 @@ export function discoverAllJsFiles(directory: string): string[] {
   }).map(item => item.path);
 }
 
-export async function copyAllDependencies(targetDirectory: string, dependencies: string[]) {
+export async function traceAllJsFiles(files: string[]) {
+  const nftResult = await nodeFileTrace(files, {});
+  return Array.from(nftResult.fileList);
+}
+
+export async function copyAllFiles(targetDirectory: string, dependencies: string[]) {
   return Promise.all(dependencies.map((dependency) => {
     const dstPath = path.join(targetDirectory, dependency);
     return new Promise(async (resolve, reject) => {

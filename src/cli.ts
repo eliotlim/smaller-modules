@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 
 import {Command} from "commander";
-import {nodeFileTrace} from "@vercel/nft";
 import * as fsExtra from "fs-extra";
 import path from "path";
 import randomWords from "random-words";
 import zipLib from "zip-lib";
 import {
-  copyAllDependencies,
+  copyAllFiles,
   DEFAULT_OUTPUT_DIRECTORY,
   DEFAULT_OUTPUT_FILENAME,
   DEFAULT_OUTPUT_SUBDIRECTORY,
-  DEFAULT_TEMPORARY_DIRECTORY, discoverAllJsFiles
+  DEFAULT_TEMPORARY_DIRECTORY,
+  discoverAllJsFiles,
+  traceAllJsFiles
 } from "./index.js";
 
 function collect(value: string, previous: string[]) {
@@ -52,8 +53,7 @@ if (opts.file && opts.file.length > 0) {
   listOfJSFiles = listOfJSFiles.concat(opts.file);
 }
 
-const nftResult = await nodeFileTrace(listOfJSFiles, {});
-const listOfDependencies = Array.from(nftResult.fileList);
+const listOfDependencies = await traceAllJsFiles(listOfJSFiles);
 
 if (opts.list) {
   if (!opts.outputPath && !opts.outputSubdirectory) {
@@ -65,13 +65,13 @@ if (opts.list) {
 
 if (opts.copy) {
   const targetDirectory = opts.outputSubdirectory ?? DEFAULT_OUTPUT_DIRECTORY;
-  await copyAllDependencies(targetDirectory, Array.from(nftResult.fileList));
+  await copyAllFiles(targetDirectory, listOfDependencies);
 }
 
 if (opts.zip) {
   const tmpDirectory = `${DEFAULT_TEMPORARY_DIRECTORY}/smaller-modules-${randomWords(2).join('-')}`;
   const targetDirectory = `${tmpDirectory}/${opts.outputSubdirectory ?? DEFAULT_OUTPUT_SUBDIRECTORY}`;
-  await copyAllDependencies(targetDirectory, Array.from(nftResult.fileList));
+  await copyAllFiles(targetDirectory, listOfDependencies);
   await zipLib.archiveFolder(tmpDirectory, opts.outputPath ?? DEFAULT_OUTPUT_FILENAME, {followSymlinks: true});
   fsExtra.emptyDirSync(tmpDirectory);
 }
