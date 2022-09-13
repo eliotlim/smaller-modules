@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import {Command} from "commander";
-import * as fsExtra from "fs-extra";
+import fsExtra from "fs-extra";
 import path from "path";
 import {
   DEFAULT_OUTPUT_DIRECTORY,
@@ -60,10 +60,8 @@ if (opts.list) {
 
 if (opts.copy) {
   await smaller.copy(opts.outputSubdirectory ?? DEFAULT_OUTPUT_DIRECTORY);
-  smaller.cleanup();
 }
 
 if (opts.zip) {
   await smaller.zip(opts.outputPath ?? DEFAULT_OUTPUT_FILENAME, {outputSubdirectory: opts.outputSubdirectory ?? DEFAULT_OUTPUT_SUBDIRECTORY});
-  smaller.cleanup();
 }

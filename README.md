@@ -2,21 +2,45 @@
 
 Shrink node_modules for deployment
 
-# Usage
+# Introduction
 
-## Trace dependencies from folder of compiled output
+![An illustration of the heaviest objects in the universe](https://i.redd.it/tfugj4n3l6ez.png "node_modules")
 
-```bash
-smaller-modules --copy --directory dist --output-subdirectory smaller_modules
+Are you having problems getting `node_modules` down to a reasonable size?
+
+```text
+Unzipped size must be smaller than 262144000 bytes
 ```
 
-## Create node_modules for Lambda
+# Quickstart
+
+## Zip up `node_modules` for Lambda
 
 ```bash
 smaller-modules --zip --file dist/handler.js
 ```
 
-which behaves the same way as (long-hand):
+## Copy dependencies of compiled output to a new directory
+
+```bash
+smaller-modules --copy --directory dist --output-subdirectory smaller_modules
+```
+
+## List dependencies of a `.js` file
+
+```bash
+smaller-modules --list --file dist/index.js --output-path dependencies.txt
+```
+
+## or print it to the command line
+
+```bash
+smaller-modules --list --file dist/index.js
+```
+
+# Usage
+
+## Zip up `node_modules` for Lambda (in long-hand)
 
 ```bash
 smaller-modules --zip --file dist/index.js --output-subdirectory nodejs --output-path node_modules.zip
