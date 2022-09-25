@@ -59,6 +59,7 @@ export class SmallerModules {
   /**
    * Store and analyse these source files for dependencies
    * @param files list of source files (e.g. `["dist/index.js", "dist/cli.js"]`)
+   * @return a chainable SmallerModules instance
    */
   files(files: string[]) {
     this.sources = this.sources.concat(files);
@@ -68,9 +69,11 @@ export class SmallerModules {
   /**
    * Traverse these directories and store all discovered source files to analyse for dependencies
    * @param directories list of directories (e.g. `["dist", "bin"]`)
+   * @return a chainable SmallerModules instance
    */
   directories(directories: string[]) {
     this.sources = this.sources.concat(directories.flatMap((directory) => discoverAllJsFiles(directory)));
+    return this;
   }
 
   /**

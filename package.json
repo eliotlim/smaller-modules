@@ -1,15 +1,14 @@
 {
   "name": "smaller-modules",
-  "version": "0.2.1",
+  "version": "0.2.4",
   "description": "Shrink node_modules for deployment",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "npm run build",
-    "build": "tsc -p .",
-    "buildinstallrun": "npm run build && npm install && node dist/index.js"
+    "test": "jest",
+    "prepublish": "npm run build && npm run test",
+    "build": "tsc -p ."
   },
   "bin": {
     "smaller-modules": "dist/cli.js"
@@ -48,6 +47,10 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
-    "@types/klaw-sync": "^6.0.1"
+    "@types/jest": "^29.0.3",
+    "@types/klaw-sync": "^6.0.1",
+    "jest": "^29.0.3",
+    "ts-jest": "^29.0.2",
+    "ts-node": "^10.9.1"
   }
 }

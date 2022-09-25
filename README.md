@@ -9,8 +9,16 @@ Shrink node_modules for deployment
 Are you having problems getting `node_modules` down to a reasonable size?
 
 ```text
-Unzipped size must be smaller than 262144000 bytes
+An error occurred (RequestEntityTooLargeException) when calling the UpdateFunctionCode operation: Request must be smaller than 69905067 bytes for the UpdateFunctionCode operation
 ```
+
+Do you hit size limits, even when creating separate layers to contain dependencies?
+
+```text
+An error occurred (InvalidParameterValueException) when calling the UpdateFunctionCode operation: Unzipped size must be smaller than 262144000 bytes
+```
+
+Here's a utility that might help.
 
 # Quickstart
 
