@@ -109,7 +109,7 @@ export class SmallerModules {
    */
   async copy(directory: string) {
     try {
-      await copyAllFiles(this.tmpDirectory, this.dependencies);
+      await copyAllFiles(this.tmpDirectory, this.dependencies, this.base ? {basePath: this.base} : undefined);
       await fsExtra.move(this.tmpDirectory, path.normalize(directory));
     } finally {
       this.cleanup();
@@ -125,7 +125,7 @@ export class SmallerModules {
   async zip(filename: string, opts?: SmallerModulesZipOptions) {
     try {
       const targetDirectory = path.join(this.tmpDirectory, opts?.outputSubdirectory ?? DEFAULT_OUTPUT_SUBDIRECTORY);
-      await copyAllFiles(targetDirectory, this.dependencies);
+      await copyAllFiles(targetDirectory, this.dependencies, this.base ? {basePath: this.base} : undefined);
       await zipLib.archiveFolder(this.tmpDirectory, path.normalize(filename), {followSymlinks: true});
     } finally {
       this.cleanup();
@@ -173,13 +173,14 @@ export async function traceAllJsFiles(files: string[], opts?: NodeFileTraceOptio
  * Copies all dependency files to the specified directory
  * @param targetDirectory path to destination directory
  * @param dependencies list of dependency files to be copied
+ * @param opts options to use when copying files
  */
-export async function copyAllFiles(targetDirectory: string, dependencies: string[]) {
+export async function copyAllFiles(targetDirectory: string, dependencies: string[], opts?: {basePath?: string}) {
   return Promise.all(dependencies.map((dependency) => {
     const dstPath = path.join(targetDirectory, dependency);
     return new Promise(async (resolve, reject) => {
       await fsExtra.ensureDir(path.dirname(dstPath));
-      await fs.copyFile(dependency, dstPath, err => reject(err));
+      await fs.copyFile(path.join(opts?.basePath ?? "", dependency), dstPath, err => reject(err));
       resolve(dstPath);
     });
   }));

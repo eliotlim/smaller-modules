@@ -16,7 +16,7 @@ function collect(value: string, previous: string[]) {
 
 const program = new Command();
 program
-  .version("0.3.0-alpha.0")
+  .version("0.3.0-alpha.1")
   .description("Shrink node_modules for deployment")
   .option("-c, --copy", "copy required files to a new directory")
   .option("-l, --list", "output list of required files")
