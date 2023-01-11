@@ -16,12 +16,13 @@ function collect(value: string, previous: string[]) {
 
 const program = new Command();
 program
-  .version("0.1.0")
+  .version("0.3.0")
   .description("Shrink node_modules for deployment")
   .option("-c, --copy", "copy required files to a new directory")
   .option("-l, --list", "output list of required files")
   .option("-z, --zip", "output a zip file containing node_modules")
 
+  .option("-b, --base <path/to/base>", "base directory containing all source files")
   .option("-d, --directory <path/to/js>", "input directory for dependency tracing", collect, [])
   .option("-f, --file <filename.js>", "input file for dependency tracing", collect, [])
   .option("-o, --output-path <path/to/build/output>", "output file (list) or directory (copy / zip)")
@@ -38,7 +39,9 @@ if (!opts.copy && !opts.list && !opts.zip) {
   program.outputHelp();
 }
 
-const smaller = new SmallerModules();
+const smaller = new SmallerModules({
+  base: opts.base
+});
 
 if (opts.directory && opts.directory.length > 0) {
   smaller.directories(opts.directory);

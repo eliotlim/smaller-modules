@@ -2,7 +2,7 @@ import klawSync from "klaw-sync";
 import * as fs from "fs";
 import fsExtra from "fs-extra";
 import * as path from "path";
-import {nodeFileTrace} from "@vercel/nft";
+import {nodeFileTrace, NodeFileTraceOptions} from "@vercel/nft";
 import randomWords from "random-words";
 import zipLib from "zip-lib";
 
@@ -27,6 +27,12 @@ export interface SmallerModulesOptions {
    * Example: `["package.json", "LICENSE"]`
    */
   dependencies?: string[];
+  /**
+   * Path to base directory, above which files will not be traced
+   *
+   * Examples: `.`, `../`, `/home/user/Projects/X`, `/Users/John/Projects/X`
+   */
+  base?: string;
 }
 
 export interface SmallerModulesZipOptions {
@@ -46,6 +52,7 @@ export interface SmallerModulesZipOptions {
  * Your mileage may vary.
  */
 export class SmallerModules {
+  private base?: string;
   /**
    * Allocates a new SmallerModules instance to provide stateful tracing of source file dependencies
    * @param opts options to initialise data structures and override defaults
@@ -54,6 +61,7 @@ export class SmallerModules {
     this.tmpDirectory = path.join(DEFAULT_TEMPORARY_DIRECTORY, `smaller-modules-${randomWords(2).join('-')}`);
     this.sources = opts?.sources ?? [];
     this.dependencies = opts?.dependencies ?? [];
+    this.base = opts?.base ?? undefined;
   }
 
   /**
@@ -80,7 +88,10 @@ export class SmallerModules {
    * Analyse stored and discovered source files for dependencies
    */
   async trace() {
-    this.dependencies = this.dependencies.concat(await traceAllJsFiles(this.sources));
+    const traceOpts = {
+      base: this.base ? path.resolve(this.base) : undefined,
+    }
+    this.dependencies = this.dependencies.concat(await traceAllJsFiles(this.sources, traceOpts));
     return this;
   }
 
@@ -98,7 +109,7 @@ export class SmallerModules {
    */
   async copy(directory: string) {
     try {
-      await copyAllFiles(this.tmpDirectory, this.dependencies);
+      await copyAllFiles(this.tmpDirectory, this.dependencies, this.base ? {basePath: this.base} : undefined);
       await fsExtra.move(this.tmpDirectory, path.normalize(directory));
     } finally {
       this.cleanup();
@@ -114,7 +125,7 @@ export class SmallerModules {
   async zip(filename: string, opts?: SmallerModulesZipOptions) {
     try {
       const targetDirectory = path.join(this.tmpDirectory, opts?.outputSubdirectory ?? DEFAULT_OUTPUT_SUBDIRECTORY);
-      await copyAllFiles(targetDirectory, this.dependencies);
+      await copyAllFiles(targetDirectory, this.dependencies, this.base ? {basePath: this.base} : undefined);
       await zipLib.archiveFolder(this.tmpDirectory, path.normalize(filename), {followSymlinks: true});
     } finally {
       this.cleanup();
@@ -150,10 +161,11 @@ export function discoverAllJsFiles(directory: string): string[] {
 /**
  * Return a de-duplicated list of dependencies from analysing and tracing source files
  * @param files list of paths to source files
+ * @param opts options to pass to NodeFileTrace
  * @return Promise containing dependencies list of paths to dependency files
  */
-export async function traceAllJsFiles(files: string[]): Promise<string[]> {
-  const nftResult = await nodeFileTrace(files, {});
+export async function traceAllJsFiles(files: string[], opts?: NodeFileTraceOptions): Promise<string[]> {
+  const nftResult = await nodeFileTrace(files, opts);
   return Array.from(nftResult.fileList);
 }
 
@@ -161,13 +173,14 @@ export async function traceAllJsFiles(files: string[]): Promise<string[]> {
  * Copies all dependency files to the specified directory
  * @param targetDirectory path to destination directory
  * @param dependencies list of dependency files to be copied
+ * @param opts options to use when copying files
  */
-export async function copyAllFiles(targetDirectory: string, dependencies: string[]) {
+export async function copyAllFiles(targetDirectory: string, dependencies: string[], opts?: {basePath?: string}) {
   return Promise.all(dependencies.map((dependency) => {
     const dstPath = path.join(targetDirectory, dependency);
     return new Promise(async (resolve, reject) => {
       await fsExtra.ensureDir(path.dirname(dstPath));
-      await fs.copyFile(dependency, dstPath, err => reject(err));
+      await fs.copyFile(path.join(opts?.basePath ?? "", dependency), dstPath, err => reject(err));
       resolve(dstPath);
     });
   }));
