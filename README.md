@@ -53,3 +53,10 @@ smaller-modules --list --file dist/index.js
 ```bash
 smaller-modules --zip --file dist/index.js --output-subdirectory nodejs --output-path node_modules.zip
 ```
+
+## Use with packages in a mono-repository
+
+```bash
+# Run from packages/<package-name>
+smaller-modules --list --file dist/index.js --base "../.." 
+```
