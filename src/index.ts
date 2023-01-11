@@ -2,7 +2,7 @@ import klawSync from "klaw-sync";
 import * as fs from "fs";
 import fsExtra from "fs-extra";
 import * as path from "path";
-import {nodeFileTrace} from "@vercel/nft";
+import {nodeFileTrace, NodeFileTraceOptions} from "@vercel/nft";
 import randomWords from "random-words";
 import zipLib from "zip-lib";
 
@@ -27,6 +27,12 @@ export interface SmallerModulesOptions {
    * Example: `["package.json", "LICENSE"]`
    */
   dependencies?: string[];
+  /**
+   * Path to base directory, above which files will not be traced
+   *
+   * Examples: `.`, `../`, `/home/user/Projects/X`, `/Users/John/Projects/X`
+   */
+  base?: string;
 }
 
 export interface SmallerModulesZipOptions {
@@ -46,6 +52,7 @@ export interface SmallerModulesZipOptions {
  * Your mileage may vary.
  */
 export class SmallerModules {
+  private base?: string;
   /**
    * Allocates a new SmallerModules instance to provide stateful tracing of source file dependencies
    * @param opts options to initialise data structures and override defaults
@@ -54,6 +61,7 @@ export class SmallerModules {
     this.tmpDirectory = path.join(DEFAULT_TEMPORARY_DIRECTORY, `smaller-modules-${randomWords(2).join('-')}`);
     this.sources = opts?.sources ?? [];
     this.dependencies = opts?.dependencies ?? [];
+    this.base = opts?.base ?? undefined;
   }
 
   /**
@@ -80,7 +88,10 @@ export class SmallerModules {
    * Analyse stored and discovered source files for dependencies
    */
   async trace() {
-    this.dependencies = this.dependencies.concat(await traceAllJsFiles(this.sources));
+    const traceOpts = {
+      base: this.base ? path.resolve(this.base) : undefined,
+    }
+    this.dependencies = this.dependencies.concat(await traceAllJsFiles(this.sources, traceOpts));
     return this;
   }
 
@@ -150,10 +161,11 @@ export function discoverAllJsFiles(directory: string): string[] {
 /**
  * Return a de-duplicated list of dependencies from analysing and tracing source files
  * @param files list of paths to source files
+ * @param opts options to pass to NodeFileTrace
  * @return Promise containing dependencies list of paths to dependency files
  */
-export async function traceAllJsFiles(files: string[]): Promise<string[]> {
-  const nftResult = await nodeFileTrace(files, {});
+export async function traceAllJsFiles(files: string[], opts?: NodeFileTraceOptions): Promise<string[]> {
+  const nftResult = await nodeFileTrace(files, opts);
   return Array.from(nftResult.fileList);
 }
 
